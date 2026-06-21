@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "description": "Astro 6 base layer — defineConfig wrapper + integrations preset + Tailwind v4 + Base layout + reusable Cloudflare Pages deploy workflow.",
   "type": "module",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "author": "Chirag Singhal <chirag@oriz.in>",
   "homepage": "https://github.com/chirag127/astro-shell-npm-pkg#readme",
   "repository": {
