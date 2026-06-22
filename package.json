@@ -1,6 +1,6 @@
 {
   "name": "@chirag127/astro-shell",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Astro 6 base layer — shell() defineConfig wrapper + OrizSiteConfig type + integrations preset (React + sitemap + MDX) + Tailwind v4 vite plugin + reusable Cloudflare Pages deploy workflow + design tokens + dynamic family-data registry (FAMILY_APPS / FAMILY_PACKAGES / FAMILY_APIS / FAMILY_BOOKS / FAMILY_EXTENSIONS / FAMILY_SKILLS).",
   "type": "module",
   "license": "MIT",
@@ -30,7 +30,8 @@
     "./types": "./src/types.ts",
     "./tokens": "./src/tokens.ts",
     "./tokens.css": "./src/tokens.css",
-    "./family-data": "./src/family-data.ts"
+    "./family-data": "./src/family-data.ts",
+    "./pricing-url": "./src/pricing-url.ts"
   },
   "peerDependencies": {
     "@astrojs/mdx": "^4.0.0",
