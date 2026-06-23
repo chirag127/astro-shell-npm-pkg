@@ -654,7 +654,7 @@ export const FAMILY_EXTENSIONS: FamilyExtension[] = [
     slug: 'Ai-rewrite',
     surface: 'chrome',
     url: 'https://github.com/chirag127/Ai-rewrite',
-    tagline: 'AI-powered text rewriting extension',
+    tagline: 'AI-powered text rewriting extension (fork of SupratimRK/Ai-rewrite; lives at projects/forks/Ai-rewrite/)',
   },
 ]
 

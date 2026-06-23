@@ -2,7 +2,7 @@
 //
 // Cross-domain auth helper for the oriz family. Each app's chrome calls these
 // helpers to (a) read the central auth state shared across *.oriz.in and (b)
-// render a sign-in CTA that bounces the user to https://auth.oriz.in/sign-in
+// render a sign-in CTA that bounces the user to https://account.oriz.in/sign-in
 // with a `return` URL so the central auth surface can complete the round-trip.
 //
 // Design notes:
@@ -17,7 +17,7 @@
 //     `displayName` / `photoURL` to render a chrome.
 
 /** Central auth surface origin. Single source of truth. */
-export const AUTH_ORIGIN = 'https://auth.oriz.in'
+export const AUTH_ORIGIN = 'https://account.oriz.in'
 
 /** Cookie name set on `.oriz.in` by the central auth app after sign-in. */
 export const AUTH_COOKIE = 'oriz_auth'
