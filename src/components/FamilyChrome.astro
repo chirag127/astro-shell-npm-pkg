@@ -1,0 +1,194 @@
+---
+// @chirag127/astro-shell/components/FamilyChrome
+//
+// Drop-in chrome (top bar + footer) every app under *.oriz.in renders.
+// Imports `authGateInit` and `pricingUrl` from this package so the chrome
+// shows live sign-in state from the shared `oriz_auth` cookie and points
+// the "Pricing" link at oriz.in/pricing?from=<slug> (single checkout surface).
+//
+// Usage in any app layout:
+//
+//   ---
+//   import FamilyChrome from '@chirag127/astro-shell/components/FamilyChrome.astro'
+//   ---
+//   <html>
+//     <body>
+//       <FamilyChrome slug="oriz-omni-post-app" title="Omni" />
+//       <main>...</main>
+//     </body>
+//   </html>
+//
+// One source of truth for sign-in + pricing + family nav across 30 apps.
+import { authGateInit } from '../auth-gate'
+import { pricingUrl } from '../pricing-url'
+
+interface Props {
+  /** App slug from family-data registry. Used for pricing ?from= attribution. */
+  slug: string
+  /** Display name shown in the chrome (e.g. "Omni", "Pivot"). */
+  title: string
+  /** Optional href for the title — defaults to "/". */
+  titleHref?: string
+  /** Optional accent color from the family palette. Defaults to the brand vermilion. */
+  accent?: string
+}
+
+const { slug, title, titleHref = '/', accent = '#c1440e' } = Astro.props
+const pricing = pricingUrl(slug)
+---
+
+<header class="oriz-chrome" style={`--oriz-accent:${accent}`}>
+  <nav class="oriz-chrome__inner">
+    <a class="oriz-chrome__title" href={titleHref}>
+      <span class="oriz-chrome__mark" aria-hidden="true">o</span>
+      <span class="oriz-chrome__name">{title}</span>
+    </a>
+
+    <div class="oriz-chrome__spacer"></div>
+
+    <a class="oriz-chrome__link" href="https://oriz.in">Family</a>
+    <a class="oriz-chrome__link" href={pricing}>Pricing</a>
+
+    <a class="oriz-chrome__cta" hidden data-auth-signed-out data-auth-signin href="https://account.oriz.in/sign-in">
+      Sign in
+    </a>
+
+    <a class="oriz-chrome__account" hidden data-auth-signed-in href="https://account.oriz.in/dashboard" aria-label="Account">
+      <img class="oriz-chrome__avatar" data-auth-avatar src="" alt="" />
+      <span class="oriz-chrome__account-name" data-auth-name>…</span>
+    </a>
+  </nav>
+</header>
+
+<footer class="oriz-foot">
+  <div class="oriz-foot__inner">
+    <span class="oriz-foot__mark">o · {title}</span>
+    <span class="oriz-foot__bullet">·</span>
+    <a class="oriz-foot__link" href="https://oriz.in">oriz.in</a>
+    <a class="oriz-foot__link" href={pricing}>Pricing</a>
+    <a class="oriz-foot__link" href="https://account.oriz.in/dashboard/data-privacy">Privacy</a>
+    <a class="oriz-foot__link" href="https://github.com/oriz-co">Source</a>
+  </div>
+</footer>
+
+<script is:inline set:html={authGateInit()}></script>
+
+<style>
+  /* Family aesthetic, applied uniformly: cream paper bg, ink-on-paper type,
+     hairline rules, zero border-radius. Reads "Stripe Press × broadsheet". */
+  :where(.oriz-chrome) {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #faf6ef;
+    border-bottom: 1px solid #15140f;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 14px;
+  }
+  .oriz-chrome__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .oriz-chrome__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #15140f;
+    font-weight: 600;
+  }
+  .oriz-chrome__mark {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    background: var(--oriz-accent, #c1440e);
+    color: #faf6ef;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .oriz-chrome__name {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+  .oriz-chrome__spacer { flex: 1; }
+  .oriz-chrome__link {
+    color: #3a3a36;
+    text-decoration: none;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 120ms;
+  }
+  .oriz-chrome__link:hover { border-bottom-color: #15140f; }
+  .oriz-chrome__cta {
+    color: #faf6ef;
+    background: #15140f;
+    padding: 6px 14px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 120ms;
+  }
+  .oriz-chrome__cta:hover { background: var(--oriz-accent, #c1440e); }
+  .oriz-chrome__account {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #15140f;
+    padding: 4px 8px;
+    border: 1px solid #cfc9bb;
+  }
+  .oriz-chrome__account:hover { border-color: #15140f; }
+  .oriz-chrome__avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #cfc9bb;
+  }
+  .oriz-chrome__account-name {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .oriz-foot {
+    border-top: 1px solid #15140f;
+    background: #faf6ef;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 12px;
+    color: #3a3a36;
+    margin-top: 64px;
+  }
+  .oriz-foot__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+  }
+  .oriz-foot__mark { font-family: 'Fraunces', Georgia, serif; }
+  .oriz-foot__bullet { color: #6b6b66; }
+  .oriz-foot__link {
+    color: #3a3a36;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 120ms;
+  }
+  .oriz-foot__link:hover { border-bottom-color: #15140f; }
+
+  @media (max-width: 640px) {
+    .oriz-chrome__link:nth-of-type(1) { display: none; } /* hide "Family" on mobile */
+    .oriz-chrome__account-name { max-width: 80px; }
+  }
+</style>

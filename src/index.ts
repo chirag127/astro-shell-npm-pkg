@@ -26,3 +26,5 @@ export {
   authGateInit,
 } from './auth-gate'
 export type { OrizAuthUser } from './auth-gate'
+export { flags } from './flags'
+export type { FlagContext } from './flags'
