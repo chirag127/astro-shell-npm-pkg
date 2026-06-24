@@ -1,0 +1,238 @@
+---
+// @chirag127/astro-shell/components/FamilySidebar
+//
+// Left-rail sidebar for oriz family apps. Three sections:
+//   1. App's own tools / nav (slot="tools" — caller supplies)
+//   2. Related family apps (auto from FAMILY_APPS registry)
+//   3. Footer: sign-in / pricing / privacy
+//
+// Behavior:
+//   • Desktop (>=768px): persistent 240px rail on the left.
+//   • Mobile: hidden by default, opens via the `<FamilyChrome>` hamburger
+//     (data-sidebar-toggle attribute).
+//   • Current page highlight comes from `Astro.url.pathname` exact match
+//     against the `href` of every link rendered in the tools slot.
+//
+// Usage in any app layout:
+//
+//   ---
+//   import FamilyChrome from '@chirag127/astro-shell/components/FamilyChrome.astro'
+//   import FamilySidebar from '@chirag127/astro-shell/components/FamilySidebar.astro'
+//   ---
+//   <html>
+//     <body>
+//       <FamilyChrome slug="oriz-cipher-crypto-tools-app" title="Crypto" />
+//       <div class="oriz-shell">
+//         <FamilySidebar slug="oriz-cipher-crypto-tools-app" title="Crypto Tools">
+//           <a slot="tools" href="/tools/aes/">AES</a>
+//           <a slot="tools" href="/tools/base64/">Base64</a>
+//           <!-- ... -->
+//         </FamilySidebar>
+//         <main class="oriz-main"><slot /></main>
+//       </div>
+//     </body>
+//   </html>
+//
+// The `.oriz-shell` + `.oriz-main` wrappers are styled here for layout. Apps
+// can override .oriz-main padding from their own CSS without touching this file.
+import { FAMILY_APPS } from '../family-data'
+import { pricingUrl } from '../pricing-url'
+
+interface Props {
+  /** App slug — used for filtering related apps + pricing attribution. */
+  slug: string
+  /** Section heading shown above the tools slot. */
+  title: string
+  /** Optional family-app filter. Default: show 6 sibling apps from same category. */
+  showRelated?: boolean
+  /** Optional accent for the active-tool highlight. */
+  accent?: string
+}
+
+const { slug, title, showRelated = true, accent = '#c1440e' } = Astro.props
+const pathname = Astro.url.pathname
+
+// Pick 6 related apps from the same kind (tools/content/hub) excluding self.
+const me = FAMILY_APPS.find((a) => a.slug === slug)
+const related = FAMILY_APPS.filter((a) => a.slug !== slug && (me ? a.url.includes('oriz.in') : true)).slice(0, 8)
+---
+
+<aside class="oriz-sidebar" data-sidebar style={`--oriz-accent:${accent}`}>
+  <nav class="oriz-sidebar__inner" aria-label="Section navigation">
+    <section class="oriz-sidebar__sec">
+      <h2 class="oriz-sidebar__h">{title}</h2>
+      <div class="oriz-sidebar__links" data-current-path={pathname}>
+        <slot name="tools" />
+      </div>
+    </section>
+
+    {showRelated && (
+      <section class="oriz-sidebar__sec">
+        <h2 class="oriz-sidebar__h">Family</h2>
+        <div class="oriz-sidebar__links">
+          {related.map((a) => (
+            <a class="oriz-sidebar__a oriz-sidebar__a--ext" href={a.url}>
+              {a.slug.replace(/^oriz-/, '').replace(/-app$/, '').replace(/-tools$/, '')}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="oriz-sidebar__sec oriz-sidebar__sec--foot">
+      <a class="oriz-sidebar__a" hidden data-auth-signed-out data-auth-signin href="https://account.oriz.in/sign-in">Sign in</a>
+      <a class="oriz-sidebar__a" hidden data-auth-signed-in href="https://account.oriz.in/dashboard">Account</a>
+      <a class="oriz-sidebar__a" href={pricingUrl(slug)}>Pricing</a>
+      <a class="oriz-sidebar__a" href="https://account.oriz.in/dashboard/data-privacy">Privacy</a>
+    </section>
+  </nav>
+</aside>
+
+<script is:inline define:vars={{ pathname }}>
+  // Highlight the active tool link by matching pathname (exact match preferred,
+  // prefix match as fallback for sub-pages). Runs on every page load.
+  (function () {
+    const container = document.querySelector('[data-current-path]')
+    if (!container) return
+    const links = container.querySelectorAll('a[href]')
+    let best = null
+    let bestLen = 0
+    links.forEach((a) => {
+      const href = a.getAttribute('href') || ''
+      try {
+        const u = new URL(href, location.origin)
+        if (u.pathname === pathname) {
+          a.classList.add('is-current')
+          a.setAttribute('aria-current', 'page')
+        } else if (pathname.startsWith(u.pathname) && u.pathname.length > 1 && u.pathname.length > bestLen) {
+          best = a
+          bestLen = u.pathname.length
+        }
+      } catch {}
+    })
+    if (best) {
+      best.classList.add('is-current')
+      best.setAttribute('aria-current', 'page')
+    }
+
+    // Mobile drawer: respond to clicks on any [data-sidebar-toggle] element.
+    const sidebar = document.querySelector('[data-sidebar]')
+    document.querySelectorAll('[data-sidebar-toggle]').forEach((btn) =>
+      btn.addEventListener('click', () => sidebar.classList.toggle('is-open')),
+    )
+    // Close drawer when a link is clicked (mobile UX).
+    sidebar?.querySelectorAll('a').forEach((a) =>
+      a.addEventListener('click', () => sidebar.classList.remove('is-open')),
+    )
+  })()
+</script>
+
+<style is:global>
+  /* Shell layout — apps wrap their content in .oriz-shell + .oriz-main.
+     Defined as :global so apps don't need to copy this into their own CSS. */
+  .oriz-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 50px); /* chrome height */
+    background: #faf6ef;
+  }
+  .oriz-main {
+    min-width: 0;
+    padding: 32px 24px 64px;
+  }
+  @media (max-width: 768px) {
+    .oriz-shell { grid-template-columns: 1fr; }
+    .oriz-main { padding: 20px 16px 48px; }
+  }
+</style>
+
+<style>
+  .oriz-sidebar {
+    background: #f4eee2;
+    border-right: 1px solid #15140f;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 14px;
+  }
+  .oriz-sidebar__inner {
+    position: sticky;
+    top: 50px;
+    max-height: calc(100vh - 50px);
+    overflow-y: auto;
+    padding: 20px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .oriz-sidebar__sec {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .oriz-sidebar__sec--foot {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #d6d0c1;
+  }
+  .oriz-sidebar__h {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b6b66;
+    margin: 0 0 6px;
+    padding: 0 8px;
+  }
+  .oriz-sidebar__links {
+    display: flex;
+    flex-direction: column;
+  }
+  .oriz-sidebar__a {
+    display: block;
+    color: #15140f;
+    text-decoration: none;
+    padding: 7px 8px;
+    border-left: 2px solid transparent;
+    min-height: 32px;
+    line-height: 1.3;
+    transition: background 120ms, border-left-color 120ms;
+  }
+  .oriz-sidebar__a:hover {
+    background: #ebe4d2;
+  }
+  .oriz-sidebar__a.is-current,
+  .oriz-sidebar__a[aria-current='page'] {
+    border-left-color: var(--oriz-accent, #c1440e);
+    background: #ede6d4;
+    font-weight: 500;
+  }
+  .oriz-sidebar__a--ext {
+    color: #3a3a36;
+  }
+  .oriz-sidebar__a--ext::after {
+    content: '↗';
+    margin-left: 6px;
+    color: #cfc9bb;
+    font-size: 10px;
+    vertical-align: super;
+  }
+
+  @media (max-width: 768px) {
+    .oriz-sidebar {
+      position: fixed;
+      top: 50px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: translateX(-100%);
+      transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 90;
+      border-right: 0;
+      border-bottom: 1px solid #15140f;
+      overflow-y: auto;
+    }
+    .oriz-sidebar.is-open { transform: translateX(0); }
+    .oriz-sidebar__inner { max-height: none; position: static; }
+  }
+</style>

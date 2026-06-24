@@ -1,6 +1,6 @@
 {
   "name": "@chirag127/astro-shell",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Astro 6 base layer \u00e2\u20ac\u201d shell() defineConfig wrapper + OrizSiteConfig type + integrations preset (React + sitemap + MDX) + Tailwind v4 vite plugin + reusable Cloudflare Pages deploy workflow + design tokens + dynamic family-data registry (FAMILY_APPS / FAMILY_PACKAGES / FAMILY_APIS / FAMILY_BOOKS / FAMILY_EXTENSIONS / FAMILY_SKILLS) + cross-domain auth-gate helpers (readAuthCookie / signInUrl / authGateInit) for the central auth.oriz.in surface.",
   "type": "module",
   "license": "MIT",
@@ -34,7 +34,8 @@
     "./pricing-url": "./src/pricing-url.ts",
     "./auth-gate": "./src/auth-gate.ts",
     "./flags": "./src/flags.ts",
-    "./components/FamilyChrome.astro": "./src/components/FamilyChrome.astro"
+    "./components/FamilyChrome.astro": "./src/components/FamilyChrome.astro",
+    "./components/FamilySidebar.astro": "./src/components/FamilySidebar.astro"
   },
   "peerDependencies": {
     "@astrojs/mdx": "^4.0.0",
